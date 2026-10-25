@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShadowKeys</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;500;700&display=swap">
+<style>
+:root{--bg:#0b0414;--p1:#7c3aed;--p2:#a855f7;--p3:#d8b4fe;--glass:rgba(30,14,56,.55);--line:rgba(168,85,247,.28);--tx:#efe6ff;--mut:#a592c9;--ok:#4ade80;--bad:#fb7185}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{font-family:Sora,system-ui,sans-serif;background:var(--bg);color:var(--tx);overflow-x:hidden}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:.55;z-index:0;animation:drift 16s ease-in-out infinite alternate}
+.o1{width:520px;height:520px;background:var(--p1);top:-140px;left:-120px}
+.o2{width:420px;height:420px;background:#c026d3;bottom:-120px;right:-80px;animation-duration:21s}
+.o3{width:300px;height:300px;background:#4f46e5;top:40%;left:55%;animation-duration:25s}
+@keyframes drift{to{transform:translate(90px,60px) scale(1.2)}}
+canvas{position:fixed;inset:0;z-index:0}
+main{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:36px 20px 80px}
+h1{font-size:clamp(34px,6vw,56px);margin:0;font-weight:700;letter-spacing:-1.5px;background:linear-gradient(90deg,#fff,var(--p3),var(--p2),#fff);background-size:250%;-webkit-background-clip:text;color:transparent;animation:shine 7s linear infinite}
+@keyframes shine{to{background-position:250%}}
+.sub{color:var(--mut);margin:6px 0 30px;font-weight:300}
+.stage{perspective:1100px}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:22px;padding:24px;backdrop-filter:blur(18px);box-shadow:0 30px 80px -30px #000,inset 0 1px 0 rgba(255,255,255,.08);transition:transform .15s ease-out;transform-style:preserve-3d;margin-bottom:22px}
+.card h2{margin:0 0 16px;font-size:18px;font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:5px}
+input,select{width:100%;background:rgba(10,4,24,.7);border:1px solid var(--line);color:var(--tx);border-radius:12px;padding:12px;font:inherit;font-size:14px;outline:none;transition:.2s}
+input:focus,select:focus{border-color:var(--p2);box-shadow:0 0 0 3px rgba(168,85,247,.25)}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:12px 18px;color:#fff;font-weight:500;background:linear-gradient(135deg,var(--p1),var(--p2));box-shadow:0 10px 30px -10px var(--p1);transition:transform .2s,box-shadow .2s}
+button:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 16px 36px -10px var(--p2)}
+button:active{transform:scale(.97)}
+button.s{padding:7px 11px;font-size:12px;background:rgba(124,58,237,.25);box-shadow:none;border:1px solid var(--line)}
+button.d{background:rgba(251,113,133,.18);border-color:rgba(251,113,133,.4)}
+.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:14px}
+.out{margin-top:14px;font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap;color:var(--p3);cursor:pointer}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--mut);font-weight:300;padding:8px}td{padding:10px 8px;border-top:1px solid var(--line);vertical-align:middle}
+.k{font-family:ui-monospace,monospace;color:var(--p3);cursor:pointer}
+.b{padding:3px 10px;border-radius:99px;font-size:11px;border:1px solid}
+.active{color:var(--ok);border-color:var(--ok)}.unused{color:var(--p3);border-color:var(--p3)}.expired,.revoked{color:var(--bad);border-color:var(--bad)}
+.gate{min-height:70vh;display:grid;place-items:center}.gate .card{width:min(380px,92vw);text-align:center}
+#toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,90px);background:var(--p1);padding:11px 20px;border-radius:12px;z-index:9;transition:transform .35s cubic-bezier(.2,1.4,.4,1)}
+#toast.on{transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><canvas id="c"></canvas>
+<main>
+<h1>ShadowKeys</h1><p class="sub">License keys for your app. Create, limit, reset, revoke.</p>
+
+<div id="gate" class="gate stage"><div class="card tilt">
+<h2>Admin login</h2><input id="pw" type="password" placeholder="Admin password">
+<div class="row" style="justify-content:center"><button onclick="login()">Enter</button></div></div></div>
+
+<div id="panel" hidden>
+<div class="stage"><div class="card tilt"><h2>Generate keys</h2>
+<div class="grid">
+<div><label>Duration</label><select id="unit"><option value="1">Hours</option><option value="24">Days</option><option value="720" selected>Months (30d)</option></select></div>
+<div><label>Amount</label><input id="amt" type="number" min="1" value="1"></div>
+<div><label>Devices allowed</label><input id="dev" type="number" min="1" value="1"></div>
+<div><label>How many keys</label><input id="cnt" type="number" min="1" max="100" value="1"></div>
+<div><label>Custom key (optional)</label><input id="cus" placeholder="Shadow-MyKey"></div>
+<div><label>Note (buyer name)</label><input id="note"></div>
+</div>
+<div class="row"><button onclick="gen()">Generate</button></div>
+<div id="out" class="out" title="Click to copy"></div></div></div>
+
+<div class="stage"><div class="card tilt"><h2>All keys</h2>
+<div class="row" style="margin:0 0 12px"><button class="s" onclick="load()">Refresh</button></div>
+<div class="tw"><table><thead><tr><th>Key</th><th>Status</th><th>Devices</th><th>Expires</th><th>Note</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+</div></div></div>
+</main><div id="toast"></div>
+<script>
+let PW=sessionStorage.getItem('sk')||'';const $=i=>document.getElementById(i);
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2200)}
+async function api(p,b){const r=await fetch(p,{method:b?'POST':'GET',headers:{'X-Admin':PW,'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});const j=await r.json();if(!r.ok)throw new Error(j.error||'Error');return j}
+async function login(){PW=$('pw').value;try{await api('/admin/list');sessionStorage.setItem('sk',PW);show()}catch(e){toast(e.message)}}
+function show(){$('gate').hidden=true;$('panel').hidden=false;load()}
+async function gen(){try{const j=await api('/admin/generate',{hours:$('amt').value*$('unit').value,devices:$('dev').value,count:$('cnt').value,custom:$('cus').value,note:$('note').value});$('out').textContent=j.keys.join('\n');toast('Created '+j.keys.length+' key(s)');load()}catch(e){toast(e.message)}}
+async function load(){const j=await api('/admin/list');$('rows').innerHTML=j.keys.map(k=>`<tr><td class="k" onclick="cp('${k.key}')">${k.key}</td><td><span class="b ${k.status}">${k.status}</span></td><td>${k.used}/${k.devices}</td><td>${k.expires_at?new Date(k.expires_at).toLocaleString():'starts on first login ('+k.hours+'h)'}</td><td>${k.note||''}</td><td style="white-space:nowrap"><button class="s" onclick="act('reset','${k.key}')">Reset devices</button> <button class="s" onclick="act('revoke','${k.key}',${k.status!='revoked'})">${k.status=='revoked'?'Restore':'Revoke'}</button> <button class="s d" onclick="if(confirm('Delete?'))act('delete','${k.key}')">Delete</button></td></tr>`).join('')||'<tr><td colspan=6>No keys yet. Generate your first one above.</td></tr>'}
+async function act(a,key,r){try{await api('/admin/'+a,{key,revoked:r});toast('Done');load()}catch(e){toast(e.message)}}
+function cp(t){navigator.clipboard.writeText(t);toast('Copied')}
+$('out').onclick=()=>cp($('out').textContent);
+$('pw').addEventListener('keydown',e=>e.key==='Enter'&&login());
+if(PW)api('/admin/list').then(show).catch(()=>sessionStorage.removeItem('sk'));
+document.querySelectorAll('.tilt').forEach(c=>{c.onmousemove=e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;c.style.transform=`rotateY(${x*6}deg) rotateX(${-y*6}deg)`};c.onmouseleave=()=>c.style.transform=''});
+// floating particles
+const cv=$('c'),g=cv.getContext('2d');let W,H,P=[];function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}rs();onresize=rs;
+for(let i=0;i<55;i++)P.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2+.5,v:Math.random()*.4+.1});
+(function t(){g.clearRect(0,0,W,H);P.forEach(p=>{p.y-=p.v;if(p.y<0){p.y=H;p.x=Math.random()*W}g.fillStyle='rgba(216,180,254,.55)';g.beginPath();g.arc(p.x,p.y,p.r,0,7);g.fill()});requestAnimationFrame(t)})();
+</script></body></html>
